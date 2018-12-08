@@ -211,4 +211,22 @@ void loop()
   Serial1.print (" Voltage_R: ");
  Serial1.print (Voltage_R);
  Serial1.println (" V");
+  /*  const float maxV = 2;
+      const float distancia;
+            
+      if(maxV < Voltage_L)
+      {   
+          Serial1.pritnln("Detecto una pared a mi izquierda, a una distancia de: ");
+          distancia = 11,6 / (Voltage_L - 0,1316);
+          Serial1.pritnln(distancia);
+          equilibrarDerecha();
+      }
+      if(maxV < Voltage_R)
+      { 
+          Serial1.pritnln("Detecto una pared a mi derecha, a una distancia de: ");
+           distancia = 11,6 / (Voltage_R - 0,1316);
+          Serial1.pritnln();
+         equilibrarIzquierda();
+      }
+      */
 }
