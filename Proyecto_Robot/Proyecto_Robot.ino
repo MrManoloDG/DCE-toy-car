@@ -214,19 +214,24 @@ void loop()
   /*  const float maxV = 2;
       const float distancia;
             
-      if(maxV < Voltage_L)
+      while(maxV < Voltage_L)
       {   
           Serial1.pritnln("Detecto una pared a mi izquierda, a una distancia de: ");
           distancia = 11,6 / (Voltage_L - 0,1316);
           Serial1.pritnln(distancia);
           evitarParedI();
       }
-      if(maxV < Voltage_R)
+      while(maxV < Voltage_R)
       { 
           Serial1.pritnln("Detecto una pared a mi derecha, a una distancia de: ");
            distancia = 11,6 / (Voltage_R - 0,1316);
           Serial1.pritnln();
          evitarParedD();
       }
+      evitarParedI()
+      {
+        rb.ForwROBOT(m1p1,m1p2,velosidad-55);
+        rb.BackROBOT(m2p1,m2p2,velosidad-55);
+       }
       */
 }
