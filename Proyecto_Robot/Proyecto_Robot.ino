@@ -12,7 +12,7 @@ const int m2p1 = 9;
 const int m2p2 = 10;
 //const int pot = 9;
 //const int pul = 13;
-
+//comentario para susa
 int sentido = 1;
 int velosidad = 0;
 
