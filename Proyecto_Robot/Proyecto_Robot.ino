@@ -12,7 +12,7 @@ const int m2p1 = 9;
 const int m2p2 = 10;
 //const int pot = 9;
 //const int pul = 13;
-//comentario para susa
+
 int sentido = 1;
 int velosidad = 0;
 
@@ -48,6 +48,140 @@ const int R_Pin=A3;
 int Value_R_Pin=0;
 float Voltage_R;
 
+const float maxV_detectarpared = 1.2;
+const float maxV_cercadepared = 2;
+float distancia;
+
+
+/******************
+ *  Funciones     *
+ ******************/
+ 
+void evitarParedI()
+{
+    moverDer(250);
+}
+void evitarParedD()
+{
+    moverIzq(250);
+}
+
+void moverIzq(int del){
+    rb.BackROBOT(m1p1,m1p2,velosidad-55);
+    rb.ForwROBOT(m2p1,m2p2,velosidad-55);
+
+    delay(del);
+    rb.StopROBOT(m1p1,m1p2);
+    rb.StopROBOT(m2p1,m2p2);
+}
+
+void moverDer(int del){
+    rb.ForwROBOT(m1p1,m1p2,velosidad-55);
+    rb.BackROBOT(m2p1,m2p2,velosidad-55);
+    
+    delay(del);
+    rb.StopROBOT(m1p1,m1p2);
+    rb.StopROBOT(m2p1,m2p2);
+}
+
+void moverAtras(){
+    rb.BackROBOT(m1p1,m1p2,velosidad);
+    rb.BackROBOT(m2p1,m2p2,velosidad);
+
+    delay(1253);
+    rb.StopROBOT(m1p1,m1p2);
+    rb.StopROBOT(m2p1,m2p2);
+}
+
+void moverAdelante(){
+    while(analogRead(CNY_Pin5) <cali_CNY && analogRead(CNY_Pin2) <cali_CNY){
+    //Serial1.println(analogRead(CNY_Pin5));
+    //Serial1.println(analogRead(CNY_Pin2));
+    rb.ForwROBOT(m1p1,m1p2,velosidad);
+    rb.ForwROBOT(m2p1,m2p2,velosidad);
+    }
+    rb.StopROBOT(m1p1,m1p2);
+    rb.StopROBOT(m2p1,m2p2);
+    //Serial1.println(analogRead(CNY_Pin5));
+    //Serial1.println(analogRead(CNY_Pin2));
+    while(analogRead(CNY_Pin5) >= cali_CNY && analogRead(CNY_Pin2) <cali_CNY){
+      rb.ForwROBOT(m2p1,m1p2,velosidad-150);
+    }
+    while(analogRead(CNY_Pin2) >= cali_CNY && analogRead(CNY_Pin5) <cali_CNY){
+      rb.ForwROBOT(m1p1,m2p2,velosidad-150);
+    }
+    rb.StopROBOT(m1p1,m1p2);
+    rb.StopROBOT(m2p1,m2p2);
+    delay(300);
+    
+    
+    rb.ForwROBOT(m1p1,m1p2,velosidad);
+    rb.ForwROBOT(m2p1,m2p2,velosidad);
+    delay(800);
+    rb.StopROBOT(m1p1,m1p2);
+    rb.StopROBOT(m2p1,m2p2);
+    infrarojo_L();
+    infrarojo_R();
+          
+}
+
+void Calibrar_CNY(){
+    Value_CNY_Pin2=analogRead(CNY_Pin2);
+    Value_CNY_Pin5=analogRead(CNY_Pin5);
+    cali_CNY = ((Value_CNY_Pin2 + Value_CNY_Pin5)/2) -100;
+    Serial1.print("CNY calibrado a ");
+    Serial1.println(cali_CNY);
+}
+
+void infrarojo_L(){
+    Value_L_Pin=analogRead(L_Pin);
+    
+    // Calculates the equivalent voltage
+    Voltage_L=Value_L_Pin*ResolutionADC;
+    Serial1.print (" Voltage_L: ");
+    Serial1.println (Voltage_L);
+    delay(1000);
+    if(maxV_detectarpared < Voltage_L)
+    {   
+      Serial1.println("Detecto una pared a mi izquierda, a una distancia de: ");
+      distancia = 11,6 / (Voltage_L - 0,1316);
+      Serial1.println(distancia);
+      
+    }
+    
+    if(maxV_cercadepared < Voltage_L)
+    {   
+      Serial1.println("Pared Cerca Izquierda, distancia:  ");
+      distancia = 11,6 / (Voltage_L - 0,1316);
+      Serial1.println(distancia);
+      evitarParedI();
+    }
+}
+
+void infrarojo_R(){
+    Value_R_Pin=analogRead(R_Pin);
+    
+    // Calculates the equivalent voltage
+    Voltage_R=Value_R_Pin*ResolutionADC;
+    
+    
+    if(maxV_detectarpared < Voltage_R)
+    { 
+      Serial1.println("Detecto una pared a mi derecha, a una distancia de: ");
+       distancia = 11,6 / (Voltage_R - 0,1316);
+      Serial1.println(distancia);
+     
+    }
+    
+    
+    if(maxV_cercadepared < Voltage_R)
+    { 
+      Serial1.println("Pared Cerca Derecha, distancia: ");
+       distancia = 11,6 / (Voltage_R - 0,1316);
+      Serial1.println(distancia);
+     evitarParedD();
+    }  
+}
 
 void setup()
 {
@@ -82,86 +216,23 @@ void loop()
       char a = Serial1.read();
       switch(a){
         case '1':
-          rb.BackROBOT(m1p1,m1p2,velosidad-55);
-          rb.ForwROBOT(m2p1,m2p2,velosidad-55);
-
-          delay(500);
-          rb.StopROBOT(m1p1,m1p2);
-          rb.StopROBOT(m2p1,m2p2);
+          moverIzq(500);
         break;
 
         case '2':
-          rb.ForwROBOT(m1p1,m1p2,velosidad-55);
-          rb.BackROBOT(m2p1,m2p2,velosidad-55);
-
-          delay(500);
-          rb.StopROBOT(m1p1,m1p2);
-          rb.StopROBOT(m2p1,m2p2);
+          moverDer(500);
         break;
 
         case '3':
-          rb.BackROBOT(m1p1,m1p2,velosidad);
-          rb.BackROBOT(m2p1,m2p2,velosidad);
-
-          delay(1253);
-          rb.StopROBOT(m1p1,m1p2);
-          rb.StopROBOT(m2p1,m2p2);
+          moverAtras();
         break;
 
         case '4':
-          while(analogRead(CNY_Pin5) <cali_CNY && analogRead(CNY_Pin2) <cali_CNY){
-          //Serial1.println(analogRead(CNY_Pin5));
-          //Serial1.println(analogRead(CNY_Pin2));
-          rb.ForwROBOT(m1p1,m1p2,velosidad);
-          rb.ForwROBOT(m2p1,m2p2,velosidad);
-          }
-          rb.StopROBOT(m1p1,m1p2);
-          rb.StopROBOT(m2p1,m2p2);
-          //Serial1.println(analogRead(CNY_Pin5));
-          //Serial1.println(analogRead(CNY_Pin2));
-          while(analogRead(CNY_Pin5) >= cali_CNY && analogRead(CNY_Pin2) <cali_CNY){
-            rb.ForwROBOT(m2p1,m1p2,velosidad-150);
-          }
-          while(analogRead(CNY_Pin2) >= cali_CNY && analogRead(CNY_Pin5) <cali_CNY){
-            rb.ForwROBOT(m1p1,m2p2,velosidad-150);
-          }
-          rb.StopROBOT(m1p1,m1p2);
-          rb.StopROBOT(m2p1,m2p2);
-          delay(300);
-          
-          /*  
-          while(analogRead(CNY_Pin0) <cali_CNY && analogRead(CNY_Pin1) <cali_CNY){
-          //Serial1.println(analogRead(CNY_Pin5));
-          //Serial1.println(analogRead(CNY_Pin2));
-          rb.ForwROBOT(m1p1,m1p2,velosidad);
-          rb.ForwROBOT(m2p1,m2p2,velosidad);
-          }
-          rb.StopROBOT(m1p1,m1p2);
-          rb.StopROBOT(m2p1,m2p2);
-          
-          while(analogRead(CNY_Pin1) >= cali_CNY && analogRead(CNY_Pin0) <cali_CNY){
-            rb.ForwROBOT(m1p1,m2p2,velosidad-150);
-          }
-          while(analogRead(CNY_Pin0) >= cali_CNY && analogRead(CNY_Pin1) <cali_CNY){
-            rb.ForwROBOT(m2p1,m1p2,velosidad-150);
-          }
-          delay(300);
-          */
-          
-          rb.ForwROBOT(m1p1,m1p2,velosidad);
-          rb.ForwROBOT(m2p1,m2p2,velosidad);
-          delay(800);
-          rb.StopROBOT(m1p1,m1p2);
-          rb.StopROBOT(m2p1,m2p2);
-          
+          moverAdelante();
         break;
 
         case '5':
-          Value_CNY_Pin2=analogRead(CNY_Pin2);
-          Value_CNY_Pin5=analogRead(CNY_Pin5);
-          cali_CNY = ((Value_CNY_Pin2 + Value_CNY_Pin5)/2) -100;
-          Serial1.print("CNY calibrado a ");
-          Serial1.println(cali_CNY);
+          Calibrar_CNY();
         break;
         
       }
@@ -193,7 +264,8 @@ void loop()
    Serial1.println(" cm");
    delay(1000);
    */
-
+/*
+ * Comentario de codigo sensor infrarojo
    Value_L_Pin=analogRead(L_Pin);
 
 // Calculates the equivalent voltage
@@ -205,33 +277,16 @@ void loop()
  Voltage_R=Value_R_Pin*ResolutionADC;
 
 
-  Serial1.print (" Voltage_L: ");
- Serial1.print (Voltage_L);
+
  Serial1.println (" V");
   Serial1.print (" Voltage_R: ");
  Serial1.print (Voltage_R);
  Serial1.println (" V");
-  /*  const float maxV = 2;
-      const float distancia;
-            
-      while(maxV < Voltage_L)
-      {   
-          Serial1.pritnln("Detecto una pared a mi izquierda, a una distancia de: ");
-          distancia = 11,6 / (Voltage_L - 0,1316);
-          Serial1.pritnln(distancia);
-          evitarParedI();
-      }
-      while(maxV < Voltage_R)
-      { 
-          Serial1.pritnln("Detecto una pared a mi derecha, a una distancia de: ");
-           distancia = 11,6 / (Voltage_R - 0,1316);
-          Serial1.pritnln();
-         evitarParedD();
-      }
-      evitarParedI()
-      {
-        rb.ForwROBOT(m1p1,m1p2,velosidad-55);
-        rb.BackROBOT(m2p1,m2p2,velosidad-55);
-       }
-      */
+ */
+
+
+
+
+
+      
 }
