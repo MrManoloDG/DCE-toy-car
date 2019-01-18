@@ -1,6 +1,12 @@
 #include <StackArray.h>
 #include "movROBOT.h"
 
+//Tiempo de Giro
+const int delay_giro = 825;
+const int delay_avance = 1375;
+
+int velosidad_D = 200;
+int velosidad_I = 195;
 
 //Definir matriz de laberinto
 int m[5][5];
@@ -23,7 +29,7 @@ const int m2p2 = 10;
 //const int pul = 13;
 
 int sentido = 1;
-int velosidad = 0;
+
 
 movROBOT rb;
 
@@ -57,7 +63,7 @@ const int R_Pin=A3;
 int Value_R_Pin=0;
 float Voltage_R;
 
-const float maxV_detectarpared = 1.2;
+const float maxV_detectarpared = 0.8;
 const float maxV_cercadepared = 2;
 float distancia;
 
@@ -68,7 +74,7 @@ float distancia;
  //Funcion que devuelve true si esta en la casilla negra de la solucion
  // o devuelve false si no lo esta
 bool solucion(){
-  
+  return (analogRead(CNY_Pin5) >cali_CNY) && (analogRead(CNY_Pin0) >cali_CNY) && (analogRead(CNY_Pin1) >cali_CNY) && (analogRead(CNY_Pin2) >cali_CNY);
 }
 
 bool laberinto(){
@@ -77,35 +83,48 @@ bool laberinto(){
     }else{
       if(!infrarojo_R()){
         //movemos a la derecha
-        moverDer(500);
+        moverDer(delay_giro);
+        delay(300);
         moverAdelante();
         pila.push(2);
+        Serial1.println("2");
+        delay(1000);
         laberinto();
       }
       if(!infrarojo_L()){
         //movemos a la derecha
-        moverIzq(500);
+        moverIzq(delay_giro);
+        delay(300);
         moverAdelante();
         pila.push(1);
+        Serial1.println("1");
+        delay(1000);
         laberinto();
       }
       if(!ultrasonido()){
         moverAdelante();
         pila.push(4);
+        Serial1.println("4");
+        delay(1000);
         laberinto();
       }
+
+      delay(1000);
 
       switch(pila.peek()){
         case 1:
           moverAtras();
-          moverIzq(500);
+          delay(300);
+          moverIzq(delay_giro);
           break;
         case 2:
           moverAtras();
-          moverDer(500);
+          delay(300);
+          moverDer(delay_giro);
           break;
         case 4:
           moverAtras();
+          delay(300);
           break;
       }
 
@@ -119,11 +138,11 @@ void salirLaberinto(){
     switch(pila.peek()){
         case 1:
           moverAtras();
-          moverIzq(500);
+          moverIzq(delay_giro);
           break;
         case 2:
           moverAtras();
-          moverDer(500);
+          moverDer(delay_giro);
           break;
         case 4:
           moverAtras();
@@ -153,17 +172,18 @@ void evitarParedD()
 }
 
 void moverIzq(int del){
-    rb.BackROBOT(m1p1,m1p2,velosidad-55);
-    rb.ForwROBOT(m2p1,m2p2,velosidad-55);
+    rb.BackROBOT(m1p1,m1p2,velosidad_I-55);
+    rb.ForwROBOT(m2p1,m2p2,velosidad_D-55);
 
     delay(del);
     rb.StopROBOT(m1p1,m1p2);
     rb.StopROBOT(m2p1,m2p2);
+   
 }
 
 void moverDer(int del){
-    rb.ForwROBOT(m1p1,m1p2,velosidad-55);
-    rb.BackROBOT(m2p1,m2p2,velosidad-55);
+    rb.ForwROBOT(m1p1,m1p2,velosidad_I-55);
+    rb.BackROBOT(m2p1,m2p2,velosidad_D-55);
     
     delay(del);
     rb.StopROBOT(m1p1,m1p2);
@@ -171,8 +191,8 @@ void moverDer(int del){
 }
 
 void moverAtras(){
-    rb.BackROBOT(m1p1,m1p2,velosidad);
-    rb.BackROBOT(m2p1,m2p2,velosidad);
+    rb.BackROBOT(m1p1,m1p2,velosidad_I);
+    rb.BackROBOT(m2p1,m2p2,velosidad_D);
 
     delay(1253);
     rb.StopROBOT(m1p1,m1p2);
@@ -180,34 +200,36 @@ void moverAtras(){
 }
 
 void moverAdelante(){
-    while(analogRead(CNY_Pin5) <cali_CNY && analogRead(CNY_Pin2) <cali_CNY){
     //Serial1.println(analogRead(CNY_Pin5));
     //Serial1.println(analogRead(CNY_Pin2));
-    rb.ForwROBOT(m1p1,m1p2,velosidad);
-    rb.ForwROBOT(m2p1,m2p2,velosidad);
-    }
-    rb.StopROBOT(m1p1,m1p2);
-    rb.StopROBOT(m2p1,m2p2);
-    //Serial1.println(analogRead(CNY_Pin5));
-    //Serial1.println(analogRead(CNY_Pin2));
-    while(analogRead(CNY_Pin5) >= cali_CNY && analogRead(CNY_Pin2) <cali_CNY){
-      rb.ForwROBOT(m2p1,m1p2,velosidad-150);
-    }
-    while(analogRead(CNY_Pin2) >= cali_CNY && analogRead(CNY_Pin5) <cali_CNY){
-      rb.ForwROBOT(m1p1,m2p2,velosidad-150);
-    }
-    rb.StopROBOT(m1p1,m1p2);
-    rb.StopROBOT(m2p1,m2p2);
-    delay(300);
+      while(analogRead(CNY_Pin5) <cali_CNY && analogRead(CNY_Pin2) <cali_CNY){
+      rb.ForwROBOT(m1p1,m1p2,velosidad_I);
+      rb.ForwROBOT(m2p1,m2p2,velosidad_D);
+      }
+      rb.StopROBOT(m1p1,m1p2);
+      rb.StopROBOT(m2p1,m2p2);
+      //Serial1.println(analogRead(CNY_Pin5));
+      //Serial1.println(analogRead(CNY_Pin2));
+      while(analogRead(CNY_Pin5) >= cali_CNY && analogRead(CNY_Pin2) <cali_CNY){
+        rb.ForwROBOT(m2p1,m2p2,velosidad_D-60);
+      }
+      while(analogRead(CNY_Pin2) >= cali_CNY && analogRead(CNY_Pin5) <cali_CNY){
+        rb.ForwROBOT(m1p1,m1p2,velosidad_I-60);
+      }
+      rb.StopROBOT(m1p1,m1p2);
+      rb.StopROBOT(m2p1,m2p2);
+      delay(300);
+      
+      
+      rb.ForwROBOT(m1p1,m1p2,velosidad_I);
+      rb.ForwROBOT(m2p1,m2p2,velosidad_D);
+      delay(delay_avance);
+      rb.StopROBOT(m1p1,m1p2);
+      rb.StopROBOT(m2p1,m2p2);
+      //infrarojo_L();
+      //infrarojo_R();
+
     
-    
-    rb.ForwROBOT(m1p1,m1p2,velosidad);
-    rb.ForwROBOT(m2p1,m2p2,velosidad);
-    delay(800);
-    rb.StopROBOT(m1p1,m1p2);
-    rb.StopROBOT(m2p1,m2p2);
-    infrarojo_L();
-    infrarojo_R();
           
 }
 
@@ -228,13 +250,13 @@ bool infrarojo_L(){
     Serial1.println (Voltage_L);
     delay(1000);
     
-    if(maxV_cercadepared < Voltage_L)
+    /*if(maxV_cercadepared < Voltage_L)
     {   
       Serial1.println("Pared Cerca Izquierda, distancia:  ");
       distancia = 11,6 / (Voltage_L - 0,1316);
       Serial1.println(distancia);
       evitarParedI();
-    }
+    }*/
     
     if(maxV_detectarpared < Voltage_L)
     {   
@@ -254,13 +276,13 @@ bool infrarojo_R(){
     // Calculates the equivalent voltage
     Voltage_R=Value_R_Pin*ResolutionADC;
 
-    if(maxV_cercadepared < Voltage_R)
+    /*if(maxV_cercadepared < Voltage_R)
     { 
       Serial1.println("Pared Cerca Derecha, distancia: ");
        distancia = 11,6 / (Voltage_R - 0,1316);
       Serial1.println(distancia);
      evitarParedD();
-    }
+    }*/
     
     if(maxV_detectarpared < Voltage_R)
     { 
@@ -285,13 +307,13 @@ bool ultrasonido(){
    digitalWrite(Sharp_Pin_Trig, LOW);
    time_bounce = pulseIn(Sharp_Pin_Echo, HIGH);
    distance = 0.017 * time_bounce; //Fórmula para calcular la distancia
-   Serial1.println();
-   Serial1.print(distance);
-   Serial1.println(" cm");
+  
    delay(1000);
 
-   if(distance<=4){
+   if(distance<=6){
     Serial1.println("detecto pared alante");
+    Serial1.print(distance);
+    Serial1.println(" cm");
     return true;
    }
    return false;
@@ -325,16 +347,15 @@ void loop()
       sentido = -1;  
     }
     */
-    velosidad = 255;
     if(Serial1.available()){
       char a = Serial1.read();
       switch(a){
         case '1':
-          moverIzq(500);
+          moverIzq(delay_giro);
         break;
 
         case '2':
-          moverDer(500);
+          moverDer(delay_giro);
         break;
 
         case '3':
@@ -348,10 +369,16 @@ void loop()
         case '5':
           Calibrar_CNY();
         break;
+
+        case '6':
+          bool exito = laberinto();
+          if(exito){
+            salirLaberinto();  
+          }
         
       }
-      Serial1.print("Comando recibido: " );
-      Serial1.println(a);
+      //Serial1.print("Comando recibido: " );
+      //Serial1.println(a);
       
     }
     /*

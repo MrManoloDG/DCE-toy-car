@@ -8,18 +8,18 @@ class movROBOT{
   public:
 
   void ForwROBOT(int in1Pin, int in2Pin, int SpeedMotor){
-    digitalWrite(in1Pin,LOW);
-    digitalWrite(in2Pin,SpeedMotor);
+    analogWrite(in1Pin,LOW);
+    analogWrite(in2Pin,SpeedMotor);
 
  }
 
   void BackROBOT(int in1Pin, int in2Pin, int SpeedMotor){
-    digitalWrite(in1Pin,SpeedMotor);
-    digitalWrite(in2Pin,LOW);
+    analogWrite(in1Pin,SpeedMotor);
+    analogWrite(in2Pin,LOW);
 }
   void StopROBOT(int in1Pin,int in2Pin){
-    digitalWrite(in1Pin,LOW);
-    digitalWrite(in2Pin,LOW);
+    analogWrite(in1Pin,LOW);
+    analogWrite(in2Pin,LOW);
 }
 
 };
