@@ -2,11 +2,11 @@
 #include "movROBOT.h"
 
 //Tiempo de Giro
-const int delay_giro = 825;
-const int delay_avance = 1375;
+const int delay_giro = 900;
+const int delay_avance = 1400;
 
 int velosidad_D = 200;
-int velosidad_I = 195;
+int velosidad_I = 190;
 
 //Definir matriz de laberinto
 int m[5][5];
@@ -78,10 +78,10 @@ bool solucion(){
 }
 
 bool laberinto(){
-    if(solucion()){
+    if(solucion() ){
       s = true;
     }else{
-      if(!infrarojo_R()){
+      if(!infrarojo_R() && !s){
         //movemos a la derecha
         moverDer(delay_giro);
         delay(300);
@@ -91,7 +91,7 @@ bool laberinto(){
         delay(1000);
         laberinto();
       }
-      if(!infrarojo_L()){
+      if(!infrarojo_L() && !s){
         //movemos a la derecha
         moverIzq(delay_giro);
         delay(300);
@@ -101,7 +101,7 @@ bool laberinto(){
         delay(1000);
         laberinto();
       }
-      if(!ultrasonido()){
+      if(!ultrasonido() && !s){
         moverAdelante();
         pila.push(4);
         Serial1.println("4");
@@ -138,14 +138,19 @@ void salirLaberinto(){
     switch(pila.peek()){
         case 1:
           moverAtras();
+          delay(500);
           moverIzq(delay_giro);
+          delay(500);
           break;
         case 2:
           moverAtras();
+          delay(500);
           moverDer(delay_giro);
+          delay(500);
           break;
         case 4:
           moverAtras();
+          delay(500);
           break;
       }
       pila.pop();
@@ -191,31 +196,90 @@ void moverDer(int del){
 }
 
 void moverAtras(){
-    rb.BackROBOT(m1p1,m1p2,velosidad_I);
-    rb.BackROBOT(m2p1,m2p2,velosidad_D);
-
-    delay(1253);
-    rb.StopROBOT(m1p1,m1p2);
-    rb.StopROBOT(m2p1,m2p2);
-}
-
-void moverAdelante(){
-    //Serial1.println(analogRead(CNY_Pin5));
-    //Serial1.println(analogRead(CNY_Pin2));
-      while(analogRead(CNY_Pin5) <cali_CNY && analogRead(CNY_Pin2) <cali_CNY){
-      rb.ForwROBOT(m1p1,m1p2,velosidad_I);
-      rb.ForwROBOT(m2p1,m2p2,velosidad_D);
+      Serial1.println("Movimiento atras");
+      Serial1.println("**********************");
+      Value_CNY_Pin0 = analogRead(CNY_Pin0);
+      Value_CNY_Pin1 = analogRead(CNY_Pin1);
+      Serial1.println("Valores CNY traseros principio llamada");
+      Serial1.println(Value_CNY_Pin0);
+      Serial1.println(Value_CNY_Pin1);
+      while(Value_CNY_Pin0 <cali_CNY && Value_CNY_Pin1 <cali_CNY){
+      rb.BackROBOT(m1p1,m1p2,velosidad_I);
+      rb.BackROBOT(m2p1,m2p2,velosidad_D);
+      Value_CNY_Pin0 = analogRead(CNY_Pin0);
+      Value_CNY_Pin1 = analogRead(CNY_Pin1);
       }
       rb.StopROBOT(m1p1,m1p2);
       rb.StopROBOT(m2p1,m2p2);
-      //Serial1.println(analogRead(CNY_Pin5));
-      //Serial1.println(analogRead(CNY_Pin2));
-      while(analogRead(CNY_Pin5) >= cali_CNY && analogRead(CNY_Pin2) <cali_CNY){
+      
+      delay(500);
+      Value_CNY_Pin0 = analogRead(CNY_Pin0);
+      Value_CNY_Pin1 = analogRead(CNY_Pin1);
+      Serial1.println("Valores CNY delanteros");
+      Serial1.println(Value_CNY_Pin0);
+      Serial1.println(Value_CNY_Pin1);
+      while(Value_CNY_Pin0 >= cali_CNY && Value_CNY_Pin1 <cali_CNY){
+        rb.BackROBOT(m1p1,m1p2,velosidad_I-60);
+        Value_CNY_Pin0 = analogRead(CNY_Pin0);
+        Value_CNY_Pin1 = analogRead(CNY_Pin1);
+      }
+      delay(200);
+      while(Value_CNY_Pin1 >= cali_CNY && Value_CNY_Pin0 <cali_CNY){
+        rb.BackROBOT(m2p1,m2p2,velosidad_D-60);
+        Value_CNY_Pin0 = analogRead(CNY_Pin0);
+        Value_CNY_Pin1 = analogRead(CNY_Pin1);
+      }
+
+      delay(200);
+      rb.StopROBOT(m1p1,m1p2);
+      rb.StopROBOT(m2p1,m2p2);
+      delay(300);
+      
+      
+      rb.BackROBOT(m1p1,m1p2,velosidad_I);
+      rb.BackROBOT(m2p1,m2p2,velosidad_D);
+      delay(delay_avance);
+      rb.StopROBOT(m1p1,m1p2);
+      rb.StopROBOT(m2p1,m2p2);
+
+}
+
+void moverAdelante(){
+      Serial1.println("Movimiento adelante");
+      Serial1.println("**********************");
+      Value_CNY_Pin5 = analogRead(CNY_Pin5);
+      Value_CNY_Pin2 = analogRead(CNY_Pin2);
+      Serial1.println("Valores CNY delanteros principio llamada");
+      Serial1.println(Value_CNY_Pin5);
+      Serial1.println(Value_CNY_Pin2);
+      while(Value_CNY_Pin5 <cali_CNY && Value_CNY_Pin2 <cali_CNY){
+      rb.ForwROBOT(m1p1,m1p2,velosidad_I);
+      rb.ForwROBOT(m2p1,m2p2,velosidad_D);
+      Value_CNY_Pin5 = analogRead(CNY_Pin5);
+      Value_CNY_Pin2 = analogRead(CNY_Pin2);
+      }
+      rb.StopROBOT(m1p1,m1p2);
+      rb.StopROBOT(m2p1,m2p2);
+      
+      delay(500);
+      Value_CNY_Pin5 = analogRead(CNY_Pin5);
+      Value_CNY_Pin2 = analogRead(CNY_Pin2);
+      Serial1.println("Valores CNY delanteros");
+      Serial1.println(Value_CNY_Pin5);
+      Serial1.println(Value_CNY_Pin2);
+      while(Value_CNY_Pin5 >= cali_CNY && Value_CNY_Pin2 <cali_CNY){
         rb.ForwROBOT(m2p1,m2p2,velosidad_D-60);
+        Value_CNY_Pin5 = analogRead(CNY_Pin5);
+        Value_CNY_Pin2 = analogRead(CNY_Pin2);
       }
-      while(analogRead(CNY_Pin2) >= cali_CNY && analogRead(CNY_Pin5) <cali_CNY){
+      delay(200);
+      while(Value_CNY_Pin2 >= cali_CNY && Value_CNY_Pin5 <cali_CNY){
         rb.ForwROBOT(m1p1,m1p2,velosidad_I-60);
+        Value_CNY_Pin5 = analogRead(CNY_Pin5);
+        Value_CNY_Pin2 = analogRead(CNY_Pin2);
       }
+
+      delay(200);
       rb.StopROBOT(m1p1,m1p2);
       rb.StopROBOT(m2p1,m2p2);
       delay(300);
@@ -236,9 +300,12 @@ void moverAdelante(){
 void Calibrar_CNY(){
     Value_CNY_Pin2=analogRead(CNY_Pin2);
     Value_CNY_Pin5=analogRead(CNY_Pin5);
-    cali_CNY = ((Value_CNY_Pin2 + Value_CNY_Pin5)/2) -100;
+    cali_CNY = ((Value_CNY_Pin2 + Value_CNY_Pin5)/2) -80;
     Serial1.print("CNY calibrado a ");
     Serial1.println(cali_CNY);
+    Serial1.println("Valores CNY delanteros");
+    Serial1.println(Value_CNY_Pin5);
+    Serial1.println(Value_CNY_Pin2);
 }
 
 bool infrarojo_L(){
@@ -373,6 +440,7 @@ void loop()
         case '6':
           bool exito = laberinto();
           if(exito){
+            delay(500);
             salirLaberinto();  
           }
         
