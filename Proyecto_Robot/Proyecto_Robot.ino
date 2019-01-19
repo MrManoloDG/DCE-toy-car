@@ -3,7 +3,7 @@
 
 //Tiempo de Giro
 const int delay_giro = 900;
-const int delay_avance = 1400;
+const int delay_avance = 1300;
 
 int velosidad_D = 200;
 int velosidad_I = 190;
@@ -74,12 +74,53 @@ float distancia;
  //Funcion que devuelve true si esta en la casilla negra de la solucion
  // o devuelve false si no lo esta
 bool solucion(){
-  return (analogRead(CNY_Pin5) >cali_CNY) && (analogRead(CNY_Pin0) >cali_CNY) && (analogRead(CNY_Pin1) >cali_CNY) && (analogRead(CNY_Pin2) >cali_CNY);
+  if((analogRead(CNY_Pin5) >cali_CNY) && (analogRead(CNY_Pin0) >cali_CNY) && (analogRead(CNY_Pin1) >cali_CNY) && (analogRead(CNY_Pin2) >cali_CNY)){
+    Serial1.println("IDea de susa ********************-___________________******");
+    switch(pila.peek()){
+        case 1:
+          Serial1.println("Mi anterior movimiento fue a la izquierda");
+          rb.BackROBOT(m1p1,m1p2,velosidad_I);
+          rb.BackROBOT(m2p1,m2p2,velosidad_D);
+          delay(1700);
+          rb.StopROBOT(m1p1,m1p2);
+          rb.StopROBOT(m2p1,m2p2);
+          delay(300);
+          moverDer(delay_giro);
+          break;
+        case 2:
+          Serial1.println("Mi anterior movimiento fue a la derecha");
+          rb.BackROBOT(m1p1,m1p2,velosidad_I);
+          rb.BackROBOT(m2p1,m2p2,velosidad_D);
+          delay(1700);
+          rb.StopROBOT(m1p1,m1p2);
+          rb.StopROBOT(m2p1,m2p2);
+          delay(300);
+          moverIzq(delay_giro);
+          break;
+        case 4:
+          Serial1.println("Mi anterior movimiento fue palante");
+          rb.BackROBOT(m1p1,m1p2,velosidad_I);
+          rb.BackROBOT(m2p1,m2p2,velosidad_D);
+          delay(1700);
+          rb.StopROBOT(m1p1,m1p2);
+          rb.StopROBOT(m2p1,m2p2);
+          delay(300);
+          break;
+      }
+      pila.pop();
+    return true;
+  }
+  return false;
 }
 
 bool laberinto(){
     if(solucion() ){
       s = true;
+      Serial1.println("Solucion Saliendo del laberinto ...");
+        Serial1.println("****************************");
+        delay(500);
+       salirLaberinto();
+      return true;
     }else{
       if(!infrarojo_R() && !s){
         //movemos a la derecha
@@ -110,25 +151,32 @@ bool laberinto(){
       }
 
       delay(1000);
-
+      if(!s){
+        Serial1.println("Casilla sin salida - Voy a ver mi pila");
+      
       switch(pila.peek()){
         case 1:
-          moverAtras();
-          delay(300);
-          moverIzq(delay_giro);
-          break;
-        case 2:
+          Serial1.println("Mi anterior movimiento fue a la izquierda");
           moverAtras();
           delay(300);
           moverDer(delay_giro);
           break;
+        case 2:
+          Serial1.println("Mi anterior movimiento fue a la derecha");
+          moverAtras();
+          delay(300);
+          moverIzq(delay_giro);
+          break;
         case 4:
+          Serial1.println("Mi anterior movimiento fue palante");
           moverAtras();
           delay(300);
           break;
       }
 
       pila.pop();
+      }
+      
     }
     delay(2000);
 }
@@ -139,13 +187,13 @@ void salirLaberinto(){
         case 1:
           moverAtras();
           delay(500);
-          moverIzq(delay_giro);
+          moverDer(delay_giro);
           delay(500);
           break;
         case 2:
           moverAtras();
           delay(500);
-          moverDer(delay_giro);
+          moverIzq(delay_giro);
           delay(500);
           break;
         case 4:
@@ -177,6 +225,8 @@ void evitarParedD()
 }
 
 void moverIzq(int del){
+    Serial1.println("Movimiento izq");
+    Serial1.println("**********************");
     rb.BackROBOT(m1p1,m1p2,velosidad_I-55);
     rb.ForwROBOT(m2p1,m2p2,velosidad_D-55);
 
@@ -187,6 +237,8 @@ void moverIzq(int del){
 }
 
 void moverDer(int del){
+    Serial1.println("Movimiento der");
+    Serial1.println("**********************");
     rb.ForwROBOT(m1p1,m1p2,velosidad_I-55);
     rb.BackROBOT(m2p1,m2p2,velosidad_D-55);
     
@@ -438,11 +490,9 @@ void loop()
         break;
 
         case '6':
-          bool exito = laberinto();
-          if(exito){
-            delay(500);
-            salirLaberinto();  
-          }
+          laberinto();
+          
+        break;
         
       }
       //Serial1.print("Comando recibido: " );
